@@ -1,0 +1,32 @@
+<!doctype html>
+<html ng-app="escrowApp">
+<head>
+  <meta charset="UTF-8">
+  <title>Escrow App</title>
+  <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-firestore.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="app.js"></script>
+</head>
+<body ng-controller="EscrowController">
+  <h1>Escrow App</h1>
+  <form ng-submit="createItem()">
+    <label>Description:</label>
+    <input type="text" ng-model="itemName">
+    <label>Seller Email:</label>
+    <input type="text" ng-model="sellerEmail">
+    <label>Buyer Email:</label>
+    <input type="text" ng-model="buyerEmail">
+    <label>Amount:</label>
+    <input type="number" ng-model="tradeAmount">
+    <label>Period:</label>
+    <input type="number" ng-model="tradePeriod">
+    <button type="submit">Create Item</button>
+  </form>
+  <h2>Items</h2>
+  <ul>
+    <li ng-repeat="item in items">{{item.name}} - {{item.price}}</li>
+  </ul>
+</body>
+</html>
+

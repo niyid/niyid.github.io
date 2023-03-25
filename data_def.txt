@@ -1,0 +1,6 @@
+		buyerEmail (string, email/cellphone), 
+		sellerEmail (string, email/cellphone), 
+		tradeAmount (monetary), 
+		tradePeriod (int), 
+		tradeStatus (enum - PAY, VERIFY_PAID, DELIVER, VERIFY_DELIVERED), 
+		tradeDate (date-time)

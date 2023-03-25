@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<!-- index.html -->
+<!DOCTYPE html>
+<html ng-cloak ng-app="ScrowIt">
+<head>
+	<title>{{appTitle}}</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+	<!-- AngularJS framework -->
+	<script src="https://code.angularjs.org/1.7.9/angular.min.js"></script>
+
+	<!-- AngularJS routing module -->
+	<script src="https://code.angularjs.org/1.7.9/angular-route.min.js"></script>
+
+	<!-- AngularFire library (requires Firebase SDK) -->
+	<script src="https://cdn.firebase.com/libs/angularfire/2.3.0/angularfire.min.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-auth.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-firestore.js"></script>
+
+	<!-- AngularJS animation module -->
+	<script src="https://code.angularjs.org/1.7.9/angular-animate.min.js"></script>
+
+	<!-- AngularJS sanitize module -->
+	<script src="https://code.angularjs.org/1.7.9/angular-sanitize.min.js"></script>
+
+	<!-- AngularJS touch module -->
+	<script src="https://code.angularjs.org/1.7.9/angular-touch.min.js"></script>
+
+	<!-- Moment.js library (for handling dates) -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+	<!-- AngularJS filter module -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-filter/0.5.17/angular-filter.min.js"></script>
+
+	<!-- angular-loading-bar module (for displaying a loading bar) -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.9.0/loading-bar.min.js"></script>
+
+	<!-- angular-elastic module (for elastic textareas) -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-elastic/2.5.1/elastic.js"></script>
+	
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	
+	<!-- Material Design Lite CSS -->
+	<link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.green-orange.min.css">
+	<!-- Material Design Icons -->
+	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<!-- Material Design Lite JS -->
+	<script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+	
+
+	<script src="app.js"></script>
+	<!-- Application scripts -->
+	<style>
+		.red-button {
+			background-color: red;
+			color: white;
+			border: none;
+			border-radius: 5px;
+			padding: 10px;
+			cursor: default;
+		}
+
+		.green-button {
+			background-color: green;
+			color: white;
+			border: none;
+			border-radius: 5px;
+			padding: 10px;
+			cursor: pointer;
+		}
+		
+		.table td {
+			border-top: none;
+			border-bottom: none;
+			border-left: 1px solid black;
+			border-right: 1px solid black;
+		}
+
+		button.secondary-button.mdl-button--colored {
+		  background-color: gray !important;
+		  color: black !important;
+		}
+
+.mdl-textfield__input {
+  background-color: rgb(255,221,114) !important;
+}		
+	</style>
+	<!-- Style sheet -->
+	<link rel="stylesheet" type="text/css" href="css/index.css">
+</head>
+<body ng-controller="ScrowItController">
+	<h1>{{appTitle}}</h1>
+	<div ng-if="isLoggedIn()" ng-show="welcomeMsgVisible" align="left">
+		<h4>Welcome, {{user.email}}!</h4>
+	</div>
+	
+	<button class="btn mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" ng-show="loginButtonVisible" data-toggle="modal" data-target="#loginFormDiv"><span class="glyphicon glyphicon-log-in"></span> Login</button>	
+
+	<button class="btn mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" ng-show="registerButtonVisible" data-toggle="modal" data-target="#registerFormDiv"><span class="glyphicon glyphicon-user"></span> Register</button>
+
+	<button class="btn mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" ng-show="logoutButtonVisible" ng-click="logout()"><span class="glyphicon glyphicon-log-out"></span> Logout</button>
+
+	<button class="btn mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" ng-show="addEscrowButtonVisible" data-toggle="modal" data-target="#addEscrowFormDiv">
+		<i class="glyphicon glyphicon-plus"></i> New Escrow
+	</button>
+	
+	
+	<div class="modal fade" id="loginFormDiv">
+		<div class="modal-dialog">
+		  <div class="modal-content">
+		   	<div class="modal-header bg-primary">
+		      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		        <span aria-hidden="true">&times;</span>
+		      </button>
+					<h5 class="modal-title">Sign On</h5>
+		    </div>
+		     <form class="text-center" ng-submit="login()">
+		    <div class="modal-body">
+						<input class="mdl-textfield__input" type="email" ng-model="emailInput" placeholder="Email"><br>
+						<input class="mdl-textfield__input" type="password" ng-model="passwordInput" placeholder="Password"><br>
+      	</div>
+		    <div class="modal-footer">
+		    	<div>
+						<button type="submit" class="btn mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"><span class="glyphicon glyphicon-log-in"></span> Login</button>
+		    	</div>
+		    	<div>
+						<div id="errorLoginForm" ng-show="error" class="alert alert-danger">{{ error }}</div>      	
+		    	</div>      
+      	</div>		  
+				</form>
+		  </div>
+		</div>
+	</div>
+	
+	<div class="modal fade" id="registerFormDiv" ng-show="registerFormDivVisible">
+		<div class="modal-dialog">
+		  <div class="modal-content">
+		   	<div class="modal-header bg-primary">
+		      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		        <span aria-hidden="true">&times;</span>
+		      </button>
+					<h5 class="modal-title">Register</h5>
+		    </div>
+				 <form class="text-center" ng-submit="addUser()">
+				  <div class="modal-body">
+						<input class="mdl-textfield__input" type="text" ng-model="userFullname" placeholder="Name"><br>
+						<input class="mdl-textfield__input" type="email" ng-model="emailRegister" placeholder="Email"><br>
+						<input class="mdl-textfield__input" type="password" ng-model="passwordRegister" placeholder="Password"><br>
+						<input class="mdl-textfield__input" type="password" ng-model="passwordConfirmRegister" placeholder="Confirmation"><br>
+				  </div>
+				  <div class="modal-footer">
+				  	<div>
+							<button type="submit" class="btn mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"><span class="glyphicon glyphicon-user"></span> Register</button>
+				  	</div>
+				  	<div>
+							<div id="errorRegisterForm" ng-show="error" class="alert alert-danger">{{ error }}</div>      	
+				  	</div>
+					</form>	
+		    </div>		  
+		  </div>
+		</div>
+	</div>
+	
+	<div class="modal fade" id="addEscrowFormDiv">
+		<div class="modal-dialog">
+		  <div class="modal-content">
+		   	<div class="modal-header bg-primary">
+		      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		        <span aria-hidden="true">&times;</span>
+		      </button>
+					<h5 class="modal-title">Add Escrow</h5>
+		    </div>
+					 <form class="text-center" ng-submit="saveEscrowItem()">
+						<div class="modal-body">
+								<input class="mdl-textfield__input" type="text" ng-model="description" placeholder="Description"><br>	
+								<input class="mdl-textfield__input" type="text" ng-model="buyerEmail" placeholder="Buyer Email"><br>
+								<input class="mdl-textfield__input" type="number" ng-model="tradeAmount" placeholder="Trade Amount"><br>
+								<input class="mdl-textfield__input" type="number" ng-model="tradePeriod" value="5" placeholder="Trade Period"><br>
+								<input class="mdl-textfield__input" type="hidden" ng-model="tradeStatus" value="PAY"><br>
+								<select id="selectTradeCurrency" ng-model="tradeCurrency" placeholder="Currency">
+									<option value="" disabled selected>Currency</option>
+									<option value="N,NGN">NGN</option>
+									<option value="$,USD">USD</option>
+									<option value="£,GPB">GBP</option>			
+								</select><br>		
+						</div>
+						<div class="modal-footer">
+							<div>
+								<button type="submit" class="btn mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+									<i class="glyphicon glyphicon-plus"></i> Save
+								</button>		
+							</div>
+							<div>
+								<div id="errorAddEscrowForm" ng-show="error" class="alert alert-danger">{{ error }}</div>      	
+							</div>      
+						</div>		  
+					</form>
+		  </div>
+		</div>
+	</div>		
+	
+	<!-- Display escrow items in a list -->
+  <div ng-show="escrowItemListVisible">
+  	<br><br>
+		<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+			<thead>
+				<tr>
+					<th class="mdl-data-table__cell--non-numeric">Description</th>
+					<th class="mdl-data-table__cell--non-numeric">Seller Email</th>
+					<th class="mdl-data-table__cell--non-numeric">Buyer Email</th>
+					<th class="mdl-data-table_cell--numeric" class="border border-dark">Trade Period</th>
+					<th class="mdl-data-table_cell--numeric" class="border border-dark">Trade Amount</th>
+					<th class="mdl-data-table_cell--non-numeric">Status</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="item in escrowItems" ng-style="$even ? { 'background-color': '#eee' } : { 'background-color': '#fff' }">
+					<td>{{item.data.description}}</td>
+					<td>{{item.data.sellerEmail}}</td>
+					<td>{{item.data.buyerEmail}}</td>
+					<td>{{item.data.tradePeriod}} days</td>
+					<td align="right">{{item.data.tradeCurrencySymbol}}{{item.data.tradeAmount | currency:''}}</td>
+					<td>
+						<div ng-if="item.data.tradeStatus == 'PAY' || item.data.tradeStatus == 'VERIFY_DELIVERED'">
+							<button ng-class="{ 'red-button': !(item.data.buyerEmail == user.email), 'green-button': (item.data.buyerEmail == user.email)}" ng-disabled="!(item.data.buyerEmail == user.email) && (item.data.tradeStatus == 'VERIFY_PAID' || item.data.tradeStatus == 'DELIVER')" ng-click="updateTradeStatus()">{{ item.data.tradeStatus }}</button>
+						</div>
+						<div ng-if="item.data.tradeStatus == 'VERIFY_PAID' || item.data.tradeStatus == 'DELIVER'">
+							<button ng-class="{ 'red-button': (item.data.buyerEmail == user.email), 'green-button': !(item.data.buyerEmail == user.email) }" ng-disabled="(item.data.buyerEmail == user.email) && (item.data.tradeStatus == 'PAY' || tradeStatus == 'VERIFY_DELIVERED')" ng-click="updateTradeStatus()">{{ item.data.tradeStatus }}</button>
+						</div>					
+					</td>
+				</tr>
+			</tbody>
+		</table>
+  </div>
+</body>
+</html> 
