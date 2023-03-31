@@ -13,12 +13,16 @@
   "author": "Apache Cordova Team",
   "license": "Apache-2.0",
   "devDependencies": {
-    "cordova-android": "^10.1.2"
+    "cordova-android": "^10.1.2",
+    "cordova-plugin-proguard": "^2.2.0"
   },
   "cordova": {
     "platforms": [
       "android"
-    ]
+    ],
+    "plugins": {
+      "cordova-plugin-proguard": {}
+    }
   },
   "dependencies": {
     "@angular/cli": "^15.2.4",
@@ -26,6 +30,8 @@
     "angular": "^1.7.9",
     "cordova": "^11.1.0",
     "firebase": "^9.18.0",
+    "flutterwave-node-v3": "^1.1.2",
+    "flutterwave-v3-angular": "^1.1.1",
     "http-server": "^14.1.1"
   }
 }

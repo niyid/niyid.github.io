@@ -12,13 +12,15 @@ const app = angular.module("ScrowIt", ["firebase", "ngRoute", "ngAnimate", "ngSa
 
 app.factory('$exceptionHandler', function() {
   return function(exception, cause) {
-    console.error(exception);
+    console.error(exception + " caused by => " + cause);
     // add any custom error handling code here
   };
 });
+
+emailjs.init('VqN9NkXpRRL79Guml');
   
 // Define the 'myController' controller
-app.controller('ScrowItController', function($scope) {
+app.controller('ScrowItController', function($scope, $http) {
   // Initialize Firestore Database
   const db = firebase.firestore();
 
@@ -87,6 +89,8 @@ app.controller('ScrowItController', function($scope) {
 				    combinedResults.push({ id: doc.id, data: doc.data() });
 				  });
 				});
+				
+				combinedResults.sort((a, b) => b.dateEdited - a.dateEdited);//Sort combined results by dateEdited
 
 				$scope.escrowItems = combinedResults;
 				$scope.$apply();
@@ -101,19 +105,28 @@ app.controller('ScrowItController', function($scope) {
 	$scope.saveEscrowItem = function() {
 		 $scope.error = null;
 			try {
+				if($scope.tradeCurrency == null) throw new Error("Trade currency must be selected");
+				if($scope.user.email == $scope.buyerEmail) throw new Error("Buyer and Seller cannot be same.");
 				var selCurrency =	$scope.tradeCurrency.split(",");
 				console.log('Selected tradeCurrency:', $scope.tradeCurrency);
 				console.log('Selected value,label:', selCurrency);
+				var fee = $scope.tradeAmount * 0.05;
 				console.log("Escrow data: ", $scope.description + " " + $scope.buyerEmail + " " + $scope.tradePeriod + " " + $scope.tradeAmount);
 				db.collection('EscrowItem').add({
 				  description: $scope.description,
 				  sellerEmail: $scope.user.email,
+				  sellerCellphone: $scope.sellerCellphone,
+				  buyerCellphone: $scope.buyerCellphone,
 				  buyerEmail: $scope.buyerEmail,
 				  tradePeriod: $scope.tradePeriod,
 				  tradeAmount: $scope.tradeAmount,
+				  //Trade fee cap is 500 NGN. Ideally the fee is split between the seller and buyer. Maybe also charge on the side of the seller?
+				  tradeFee: fee < 500 ? fee : 500,
 				  tradeStatus: "PAY",
 				  tradeCurrencySymbol: selCurrency[0],
 				  tradeCurrency: selCurrency[1],
+				  sellerBank: $scope.sellerBank,
+				  sellerBankAccount: $scope.sellerBankAccount,				  
 				  dateAdded: firebase.firestore.FieldValue.serverTimestamp(),
 				  dateEdited: firebase.firestore.FieldValue.serverTimestamp()
 				})
@@ -124,9 +137,14 @@ app.controller('ScrowItController', function($scope) {
 				  $scope.itemName = '';
 				  $scope.sellerEmail = '';
 				  $scope.buyerEmail = '';
+				  $scope.sellerCellphone = '';
+				  $scope.buyerCellphone = '';
 				  $scope.tradePeriod = '';
 				  $scope.tradeAmount = '';
 				  $scope.tradeStatus = 'PAY';
+				  $scope.tradeCurrency = '';
+				  $scope.sellerBank = '';
+				  $scope.sellerBankAccount = '';
 				  $scope.showForm = false;
 				  $scope.loadEscrowItems();
 				})
@@ -217,6 +235,186 @@ app.controller('ScrowItController', function($scope) {
         console.error("Error deactivating user: ", error);
       });
   };
+  
+  $scope.openPaymentModal = function(tradeAmount, tradeCurrency, tradeFee, sellerEmail, buyerEmail, buyerCellphone, escrowId) {
+  	console.log("openPaymentModal: " + tradeAmount + " " + tradeCurrency + " " + tradeFee + " " + buyerEmail + " " + buyerCellphone + " " + escrowId);
+		FlutterwaveCheckout({
+			public_key: "FLWPUBK_TEST-e3365466fde4515e7599e987cc814cf0-X",
+			tx_ref: "REF" + Math.floor((Math.random() * 10000000000000) + 1),
+			amount: tradeAmount + tradeFee,
+			currency: tradeCurrency,
+			payment_options: "card, ussd, bank_transfer",
+			customer: {
+				email: buyerEmail,
+				phone_number: buyerCellphone,
+				name: buyerEmail //Use email address as name
+			},
+			customizations: {
+				title: "ScrowIt!",
+				description: "Escrow Deposit",
+				logo: "img/techducat_logo.png"
+			},
+			onclose: function() {
+				console.log("openPaymentModal:onclose");
+			},
+			callback: function(response) {
+				//Email is sent to $seller_email to notify that the customer has paid into escrow.
+				console.log("openPaymentModal:callback " + response.tx_ref);
+				const docRef = db.collection('EscrowItem').doc(escrowId);
+				docRef.update({
+					tradeStatus: "DELIVER",
+					dateEdited: firebase.firestore.FieldValue.serverTimestamp(),
+					txRef: response.tx_ref
+				})
+				.then(() => {
+					console.log('Trade status now updated to DELIVER successfully');
+					docRef.get()
+						.then((doc) => {
+							if (doc.exists) {
+								const data = doc.data();
+								// Check if tradeStatus has been updated to 'DELIVER'
+								if (data.tradeStatus === 'DELIVER') {
+								  // Get the seller email address from the document
+								  $scope.sendEmail('template_status_update', sellerEmail, buyerEmail, escrowId);
+								} else {
+								  console.log('Trade status not updated to DELIVER');
+								}
+							} else {
+								console.log('No such EscrowItem document');
+							}
+						})
+						.catch((error) => {
+							console.log('Error getting EscrowItem document:', error);
+						});
+					$scope.loadEscrowItems();					
+					$scope.$apply();
+					alert("EscrowItem is now in DELIVER status.");
+				})
+				.catch((error) => {
+					console.error('Error updating EscrowItem:', error);
+				});				
+			}
+		});
+  };
+  
+  $scope.sendEmail = function(templateId, sellerEmail, buyerEmail, escrowId) {
+	  // Set up email template and dynamic data
+	  const templateParams = {
+	    seller_email: sellerEmail,
+	    buyer_email: buyerEmail,
+	    trade_id: escrowId
+	  };
+
+	  // Send the email using EmailJS
+	  emailjs.send('service_neeyeed@gmail', templateId, templateParams)
+	    .then((response) => console.log(`Email sent to ${sellerEmail}: ${response.status}`))
+	    .catch((error) => console.error('Error sending email:', error));  
+  };
+
+	$scope.updateStatus = function(status, sellerEmail, buyerEmail, escrowId) {
+		console.log("updateStatus: " + status);
+		const docRef = db.collection('EscrowItem').doc(escrowId);
+		docRef.update({
+			tradeStatus: status,
+			dateEdited: firebase.firestore.FieldValue.serverTimestamp()
+		})
+		.then(() => {
+			alert('Status updated successfully');
+			console.log('Status updated successfully');
+			$scope.loadEscrowItems();
+			$scope.$apply();
+			$scope.sendEmail('template_status_update', sellerEmail, buyerEmail);
+		})
+		.catch((error) => {
+			console.error('Error updating status:', error);
+		});				
+	};	
+	
+	$scope.paySeller = function(sellerBank, sellerBankAccount, tradeCurrency, tradeAmount, tradeFee, sellerEmail, buyerEmail, escrowId) {
+		var status = 'COMPLETE'
+		console.log("paySeller: " + status);
+		
+		const FLUTTERWAVE_SECRET_KEY = 'FLWSECK_TEST-1da1d1e6157e8e6546d6a510d2b95463-X';
+		const CUSTOMER_ACCOUNT_NUMBER = sellerBankAccount; // The customer's account number
+		const CUSTOMER_BANK_CODE = sellerBank; // The customer's bank code
+		const AMOUNT_TO_TRANSFER = (tradeAmount - tradeFee) * 100; // The amount you want to transfer in kobo (converted from NGN). Also deduct charge.
+		const CURRENCY = tradeCurrency; // The currency of the transfer
+
+		const transferPayload = {
+			account_bank: CUSTOMER_BANK_CODE,
+			account_number: CUSTOMER_ACCOUNT_NUMBER,
+			amount: AMOUNT_TO_TRANSFER,
+			currency: CURRENCY,
+			reference: "TR-REF" + Math.floor((Math.random() * 10000000000000) + 1), // Your unique transfer reference
+			callback_url: '', // Your callback URL
+			narration: 'ScrowIt! - Payout to Seller' // A description of the transfer
+		};
+
+		fetch('https://api.flutterwave.com/v3/transfers', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': 'Bearer ${FLUTTERWAVE_SECRET_KEY}'
+			},
+			body: JSON.stringify(transferPayload)
+		})
+		.then(response => {
+			if (response.ok) {
+				return response.json();
+			} else {
+				throw new Error('Network response was not ok.');
+			}
+		})
+		.then(data => {
+			updateStatus(status, escrowId, sellerEmail, buyerEmail);
+			$scope.$apply();
+			$scope.sendEmail('template_status_update', sellerEmail, buyerEmail);		
+			console.log(data);
+		})
+		.catch(error => {
+			console.error('Error:', error);
+		});
+
+
+/*		
+		$http({
+			method: 'POST',
+			url: 'https://api.flutterwave.com/v3/transfers',
+			headers: {
+				'Authorization': 'Bearer ${FLUTTERWAVE_SECRET_KEY}',
+				'Content-Type': 'application/json'
+			},
+			data: transferPayload
+		}).then(function successCallback(response) {
+				console.log("paySeller: " + response);
+				updateStatus(status, escrowId, sellerEmail, buyerEmail);
+				$scope.$apply();
+				$scope.sendEmail('template_status_update', sellerEmail, buyerEmail);
+			}, function errorCallback(response) {
+				console.log(response);
+			});		
+*/
+		// Make a POST request to the Transfer API
+/*		axios.post('https://api.flutterwave.com/v3/transfers', transferPayload, {
+			headers: {
+				'Authorization': 'Bearer ${FLUTTERWAVE_SECRET_KEY}',
+				'Content-Type': 'application/json'
+			},
+  		withCredentials: true
+		})
+			.then(response => {
+				console.log(response.data);
+				updateStatus(status, escrowId, sellerEmail, buyerEmail);
+			})
+			.catch(error => {
+				console.error(error);
+			});
+*/		
+	};	  
+
+	$scope.cancelledPayment = function(event) {
+		console.log("cancelledPayment: ");
+	};
 });  	
 
 

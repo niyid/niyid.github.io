@@ -7,54 +7,57 @@
 	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/bootstrap.min.css">
 
 	<!-- AngularJS framework -->
-	<script src="https://code.angularjs.org/1.7.9/angular.min.js"></script>
+	<!-- https://ajax.googleapis.com/ajax/libs/angularjs/1.7.9/angular.min.js -->
+	<script src="js/angular.min.js"></script>
 
 	<!-- AngularJS routing module -->
-	<script src="https://code.angularjs.org/1.7.9/angular-route.min.js"></script>
+	<script src="js/angular-route.min.js"></script>
 
 	<!-- AngularFire library (requires Firebase SDK) -->
-	<script src="https://cdn.firebase.com/libs/angularfire/2.3.0/angularfire.min.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-app.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-auth.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-firestore.js"></script>
+	<script src="js/angularfire.min.js"></script>
+	<script src="js/firebase-app.js"></script>
+	<script src="js/firebase-auth.js"></script>
+	<script src="js/firebase-firestore.js"></script>
 
 	<!-- AngularJS animation module -->
-	<script src="https://code.angularjs.org/1.7.9/angular-animate.min.js"></script>
+	<script src="js/angular-animate.min.js"></script>
 
 	<!-- AngularJS sanitize module -->
-	<script src="https://code.angularjs.org/1.7.9/angular-sanitize.min.js"></script>
+	<script src="js/angular-sanitize.min.js"></script>
 
 	<!-- AngularJS touch module -->
-	<script src="https://code.angularjs.org/1.7.9/angular-touch.min.js"></script>
+	<script src="js/angular-touch.min.js"></script>
 
 	<!-- Moment.js library (for handling dates) -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+	<script src="js/moment.min.js"></script>
 
 	<!-- AngularJS filter module -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-filter/0.5.17/angular-filter.min.js"></script>
+	<script src="js/angular-filter.min.js"></script>
 
 	<!-- angular-loading-bar module (for displaying a loading bar) -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.9.0/loading-bar.min.js"></script>
+	<script src="js/loading-bar.min.js"></script>
 
 	<!-- angular-elastic module (for elastic textareas) -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-elastic/2.5.1/elastic.js"></script>
+	<script src="js/elastic.js"></script>
 	
-	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	<script src="js/jquery-3.3.1.min.js"></script>
 
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="js/popper.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
 	
 	<!-- Material Design Lite CSS -->
-	<link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.green-orange.min.css">
+	<link rel="stylesheet" href="css/material.green-orange.min.css">
 	<!-- Material Design Icons -->
-	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<link rel="stylesheet" href="css/material_icons.css">
 	<!-- Material Design Lite JS -->
-	<script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+	<script src="js/material.min.js"></script>
 	
+	<script src="js/flutterwave-v3.js"></script>
 
+	<script type="text/javascript" src="js/email.min.js"></script>
 	<script src="app.js"></script>
 	<!-- Application scripts -->
 	<style>
@@ -88,9 +91,21 @@
 		  color: black !important;
 		}
 
-.mdl-textfield__input {
-  background-color: rgb(255,221,114) !important;
-}		
+		.mdl-textfield__input, .mdl-selectfield__select {
+			background-color: rgb(255,221,114) !important;
+			font-size: 16px;
+			height: 28px;
+		}		
+
+		.red-bold {
+			color: red;
+			font-weight: bold;
+		}
+
+		.green-bold {
+			color: green;
+			font-weight: bold;
+		}		
 	</style>
 	<!-- Style sheet -->
 	<link rel="stylesheet" type="text/css" href="css/index.css">
@@ -108,9 +123,8 @@
 	<button class="btn mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" ng-show="logoutButtonVisible" ng-click="logout()"><span class="glyphicon glyphicon-log-out"></span> Logout</button>
 
 	<button class="btn mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" ng-show="addEscrowButtonVisible" data-toggle="modal" data-target="#addEscrowFormDiv">
-		<i class="glyphicon glyphicon-plus"></i> New Escrow
+		<span class="glyphicon glyphicon-plus"></span> New Escrow
 	</button>
-	
 	
 	<div class="modal fade" id="loginFormDiv">
 		<div class="modal-dialog">
@@ -181,15 +195,42 @@
 						<div class="modal-body">
 								<input class="mdl-textfield__input" type="text" ng-model="description" placeholder="Description"><br>	
 								<input class="mdl-textfield__input" type="text" ng-model="buyerEmail" placeholder="Buyer Email"><br>
+								<input class="mdl-textfield__input" type="text" ng-model="buyerCellphone" placeholder="Buyer Cellphone"><br>
 								<input class="mdl-textfield__input" type="number" ng-model="tradeAmount" placeholder="Trade Amount"><br>
-								<input class="mdl-textfield__input" type="number" ng-model="tradePeriod" value="5" placeholder="Trade Period"><br>
-								<input class="mdl-textfield__input" type="hidden" ng-model="tradeStatus" value="PAY"><br>
-								<select id="selectTradeCurrency" ng-model="tradeCurrency" placeholder="Currency">
+								<input class="mdl-textfield__input" type="number" ng-model="tradePeriod" value="5" placeholder="Trade Period in Days"><br>
+								<input class="mdl-textfield__input" type="text" ng-model="sellerCellphone" placeholder="Seller Cellphone"><br>								
+								<select class="mdl-selectfield__select" id="selectSellerBank" ng-model="sellerBank" placeholder="Seller Bank" style="width: 100%">
+									<option value="" disabled selected>Bank</option>
+									<option value="044">Access Bank Nigeria Plc</option>
+									<option value="063">Diamond Bank Plc</option>
+									<option value="050">Ecobank Nigeria</option>
+									<option value="084">Enterprise Bank Plc</option>
+									<option value="070">Fidelity Bank Plc</option>
+									<option value="011">First Bank of Nigeria Plc</option>
+									<option value="214">First City Monument Bank</option>
+									<option value="058">Guaranty Trust Bank Plc</option>
+									<option value="030">Heritage Banking Company Ltd</option>
+									<option value="301">Jaiz Bank</option>
+									<option value="082">Keystone Bank Ltd</option>
+									<option value="014">Mainstreet Bank Plc</option>
+									<option value="076">Skye Bank Plc</option>
+									<option value="039">Stanbic IBTC Plc</option>
+									<option value="068">Standard Chartered Bank</option>
+									<option value="232">Sterling Bank Plc</option>
+									<option value="032">Union Bank Nigeria Plc</option>
+									<option value="033">United Bank for Africa Plc</option>
+									<option value="215">Unity Bank Plc</option>
+									<option value="035">WEMA Bank Plc</option>
+									<option value="057">Zenith Bank International</option>
+								</select><br>		
+								<input class="mdl-textfield__input" type="text" ng-model="sellerBankAccount" placeholder="Seller Bank Account"><br>
+								<select class="mdl-selectfield__select" id="selectTradeCurrency" ng-model="tradeCurrency" placeholder="Currency" style="width: 100%">
 									<option value="" disabled selected>Currency</option>
-									<option value="N,NGN">NGN</option>
+									<option value="₦,NGN">NGN</option>
 									<option value="$,USD">USD</option>
 									<option value="£,GPB">GBP</option>			
 								</select><br>		
+								<input type="hidden" ng-model="tradeStatus" value="PAY"><br>
 						</div>
 						<div class="modal-footer">
 							<div>
@@ -208,36 +249,66 @@
 	
 	<!-- Display escrow items in a list -->
   <div ng-show="escrowItemListVisible">
-  	<br><br>
-		<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
-			<thead>
-				<tr>
-					<th class="mdl-data-table__cell--non-numeric">Description</th>
-					<th class="mdl-data-table__cell--non-numeric">Seller Email</th>
-					<th class="mdl-data-table__cell--non-numeric">Buyer Email</th>
-					<th class="mdl-data-table_cell--numeric" class="border border-dark">Trade Period</th>
-					<th class="mdl-data-table_cell--numeric" class="border border-dark">Trade Amount</th>
-					<th class="mdl-data-table_cell--non-numeric">Status</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr ng-repeat="item in escrowItems" ng-style="$even ? { 'background-color': '#eee' } : { 'background-color': '#fff' }">
-					<td>{{item.data.description}}</td>
-					<td>{{item.data.sellerEmail}}</td>
-					<td>{{item.data.buyerEmail}}</td>
-					<td>{{item.data.tradePeriod}} days</td>
-					<td align="right">{{item.data.tradeCurrencySymbol}}{{item.data.tradeAmount | currency:''}}</td>
-					<td>
-						<div ng-if="item.data.tradeStatus == 'PAY' || item.data.tradeStatus == 'VERIFY_DELIVERED'">
-							<button ng-class="{ 'red-button': !(item.data.buyerEmail == user.email), 'green-button': (item.data.buyerEmail == user.email)}" ng-disabled="!(item.data.buyerEmail == user.email) && (item.data.tradeStatus == 'VERIFY_PAID' || item.data.tradeStatus == 'DELIVER')" ng-click="updateTradeStatus()">{{ item.data.tradeStatus }}</button>
-						</div>
-						<div ng-if="item.data.tradeStatus == 'VERIFY_PAID' || item.data.tradeStatus == 'DELIVER'">
-							<button ng-class="{ 'red-button': (item.data.buyerEmail == user.email), 'green-button': !(item.data.buyerEmail == user.email) }" ng-disabled="(item.data.buyerEmail == user.email) && (item.data.tradeStatus == 'PAY' || tradeStatus == 'VERIFY_DELIVERED')" ng-click="updateTradeStatus()">{{ item.data.tradeStatus }}</button>
-						</div>					
-					</td>
-				</tr>
-			</tbody>
-		</table>
+  	<br><br>	
+			<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+				<thead>
+					<tr>
+						<th class="mdl-data-table_cell--non-numeric">Status|Amount|Seller|Fee</th>
+						<th class="mdl-data-table__cell--non-numeric">Code|Ref|Description|Buyer</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="item in escrowItems" ng-style="$even ? { 'background-color': '#eee' } : { 'background-color': '#fff' }">
+						<td>
+							<table>
+								<tr>
+									<td>
+										<div ng-if="item.data.tradeStatus == 'PAY'">
+											<button ng-click="openPaymentModal(item.data.tradeAmount, item.data.tradeCurrency, item.data.tradeFee, item.data.sellerEmail, item.data.buyerEmail, item.data.buyerCellphone, item.id)"  type="submit" ng-class="{ 'red-button': !(item.data.buyerEmail == user.email), 'green-button': (item.data.buyerEmail == user.email) }" ng-disabled="!(item.data.buyerEmail == user.email)" style="width: 130px; height: 50px;">{{ item.data.tradeStatus }}</button>
+										</div>
+										<div ng-if="item.data.tradeStatus == 'DELIVER'">
+											<button ng-click="updateStatus('CONFIRM', item.data.sellerEmail, item.data.buyerEmail, item.id)" ng-class="{ 'red-button': !(item.data.sellerEmail == user.email), 'green-button': (item.data.sellerEmail == user.email) }" ng-disabled="!(item.data.sellerEmail == user.email)" style="width: 130px; height: 50px;">{{ item.data.tradeStatus }}</button>
+										</div>
+										<div ng-if="item.data.tradeStatus == 'CONFIRM'">
+											<button ng-click="paySeller(item.data.sellerBank, item.data.sellerBankAccount, item.data.tradeCurrency, item.data.tradeAmount, item.data.tradeFee, item.data.sellerEmail, item.data.buyerEmail, item.id)" ng-class="{ 'red-button': !(item.data.buyerEmail == user.email), 'green-button': (item.data.buyerEmail == user.email) }" ng-disabled="!(item.data.buyerEmail == user.email)" style="width: 130px; height: 50px;">{{ item.data.tradeStatus }}</button>
+										</div>
+										<div ng-if="item.data.tradeStatus == 'COMPLETE'">
+											<button class="btn btn-danger" ng-disabled="true" style="width: 130px; height: 50px;"><span class="glyphicon glyphicon-ban-circle"></span> {{ item.data.tradeStatus }}</button>
+										</div>
+									</td>
+								</tr>
+								<tr>
+									<td align="right" ng-class="{ 'red-bold': (item.data.tradeStatus == 'PAY'), 'green-bold': (item.data.tradeStatus != 'PAY') }">{{item.data.tradeCurrencySymbol}}{{item.data.tradeAmount | currency:''}}</td>
+								</tr>
+								<tr>
+									<td>{{item.data.sellerEmail}} -></td>
+								</tr>
+								<tr>
+									<td align="right" ng-class="{ 'red-bold':true }">
+										<span ng-if="item.data.tradeFee > 0">{{item.data.tradeCurrencySymbol}}</span><span ng-if="item.data.tradeFee > 0">{{item.data.tradeFee | currency:''}}<span>><span ng-if="item.data.tradeFee == 0">{{item.data.tradeFee | currency:''}}<span>
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td>
+							<table>
+								<tr>
+									<td>{{item.id}}</td>
+								</tr>
+								<tr>
+									<td>{{item.data.txRef}}</td>
+								</tr>
+								<tr>
+									<td>{{item.data.description}}</td>
+								</tr>
+								<tr>
+									<td>{{item.data.buyerEmail}}</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				</tbody>
+			</table>
   </div>
 </body>
 </html> 
